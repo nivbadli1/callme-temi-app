@@ -1,0 +1,583 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Blank Page {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<!-- fullCalendar -->
+<link rel="stylesheet" href="/static/assets/plugins/fullcalendar/main.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/fullcalendar-daygrid/main.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/fullcalendar-timegrid/main.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/fullcalendar-bootstrap/main.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/events.css">
+
+      {% endblock stylesheets %}
+
+      {% block content %}
+<!-- For our site template-->
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+{% include "includes/sidenav-rtl.html" %}
+<main class="main-content position-relative border-radius-lg overflow-hidden">
+
+    {% include "includes/navigation-rtl.html" %}
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="righte">Calendar</h1>
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-success float-right" onclick="load_patients(); load_days();"
+                                data-toggle="modal" data-target="#add_new_event_modal">תזמון שיחה עתידית
+                        </button>
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-success float-right" onclick="load_patients_now();"
+                                data-toggle="modal" data-target="#add_new_event_modal_for_now">יצירת שיחה מיידית
+                        </button>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Calendar</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="sticky-top mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Draggable Events</h4>
+                                </div>
+                                <div class="card-body">
+                                    <!-- the events -->
+                                    <div id="external-events">
+                                        <div class="external-event bg-success">Lunch</div>
+                                        <div class="external-event bg-warning">Go home</div>
+                                        <div class="external-event bg-info">Do homework</div>
+                                        <div class="external-event bg-primary">Work on UI design</div>
+                                        <div class="external-event bg-danger">Sleep tight</div>
+                                        <div class="checkbox">
+                                            <label for="drop-remove">
+                                                <input type="checkbox" id="drop-remove">
+                                                remove after drop
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.card-body -->
+                            </div>
+                            <!-- /.card -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Create Event</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group" style="width: 100%; margin-bottom: 10px;">
+                                        <ul class="fc-color-picker" id="color-chooser">
+                                            <li><a class="text-primary" href="#"><i class="fas fa-square"></i></a></li>
+                                            <li><a class="text-warning" href="#"><i class="fas fa-square"></i></a></li>
+                                            <li><a class="text-success" href="#"><i class="fas fa-square"></i></a></li>
+                                            <li><a class="text-danger" href="#"><i class="fas fa-square"></i></a></li>
+                                            <li><a class="text-muted" href="#"><i class="fas fa-square"></i></a></li>
+                                        </ul>
+                                    </div>
+                                    <!-- /btn-group -->
+                                    <div class="input-group">
+                                        <input id="new-event" type="text" class="form-control"
+                                               placeholder="Event Title">
+
+                                        <div class="input-group-append">
+                                            <button id="add-new-event" type="button" class="btn btn-primary">Add
+                                            </button>
+                                        </div>
+                                        <!-- /btn-group -->
+                                    </div>
+                                    <!-- /input-group -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-md-9">
+                        <div class="card card-primary">
+                            <div class="card-body p-0">
+                                <!-- THE CALENDAR -->
+                                <div id="calendar"></div>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
+            </div><!-- /.container-fluid -->
+
+        </section>
+        <!-- /.content -->
+
+
+    </div><!--   /.content-wrapper -->
+
+    <div id="add_new_event_modal"  class="modal fade" role="dialog" dir="rtl">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">הוספת שיחה חדשה</h4>
+                </div>
+
+                <div class="modal-body" id="add_new_event_modal_body">
+                    <form method="POST"
+                          action="{{ url_for('events_blueprint.add_new_event_popup') }}">
+                        <div class="form-group">
+                            {{ add_new_event_form.patient.label(class="form-control-label") }}
+                            {{ add_new_event_form.patient(class="form-control", id="patient_select_form") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ add_new_event_form.contact.label(class="form-control-label") }}
+                            {{ add_new_event_form.contact(class="form-control", id="contact_select_form") }}
+                        </div>
+
+
+                        <div class="form-group">
+                            {{ add_new_event_form.day.label(class="form-control-label") }}
+                            {{ add_new_event_form.day(class="form-control", id="days_select_form") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ add_new_event_form.time.label(class="form-control-label") }}
+                            {{ add_new_event_form.time(class="form-control", id="times_select_form") }}
+                        </div>
+
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit">הוספת שיחת וידאו חדשה</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="add_new_event_modal_for_now"  class="modal fade" role="dialog" dir="rtl">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">יצירת שיחה מיידית</h4>
+                </div>
+
+                <div class="modal-body" id="add_new_event_for_now_modal_body">
+                    <form method="POST"
+                          action="{{ url_for('events_blueprint.add_new_event_popup') }}">
+                        <div class="form-group">
+                            {{ add_new_event_form.patient.label(class="form-control-label") }}
+                            {{ add_new_event_form.patient(class="form-control ",id="patient_select_form_now") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ add_new_event_form.contact.label(class="form-control-label") }}
+                            {{ add_new_event_form.contact(class="form-control",id="contact_select_form_now") }}
+                        </div>
+
+
+                        <div class="form-group">
+                            <button name ='event_for_now' class="btn btn-primary" type="submit">התקשר</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Edit Event Modal-->
+    <div id="add_new_contact_modal" class="modal" role="dialog" dir="rtl">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">צפייה באירוע</h4>
+                </div>
+
+                <div class="modal-body">
+                    <form id="delete_this_event" method="POST"
+                          action="{{ url_for('events_blueprint.delete_event', eventForm=eventForm)}}">
+
+                        <label class="prettyLabel" for="eventID">האירוע מתחיל בשעה:</label>
+                        <input class="eventTimes" type="text" name="" style="width:100%" id="eventStartTime" value=""
+                               readonly/>
+
+                        <label class="prettyLabel" for="eventID">האירוע נגמר בשעה:</label>
+                        <input class="eventTimes" type="text" name="" style="width:100%" id="eventEndTime" value=""
+                               readonly/>
+
+                        <input type="hidden" name="eventID" id="eventID" value="" readonly/>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+<!--                    <input class="btn btn-warning" type="submit" form="" value="עריכת אירוע">-->
+                    <input class="btn btn-danger" type="submit" form="delete_this_event" value="מחק אירוע">
+                    <button type="button" class="btn btn-secondary" onclick="closemodal();">סגירה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</main>
+
+{% endblock content %}
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+function closemodal() {
+      $('#add_new_contact_modal').modal('hide');
+}
+
+</script>
+
+<script>
+
+<!-- 4 selectors for the 4 elements in Add New Event form (Patient, Contact, Day and Time slot)-->
+    var patient_select = document.getElementById("patient_select_form");
+
+    var contact_select = document.getElementById("contact_select_form");
+
+    var days_select = document.getElementById("days_select_form");
+    var times_select = document.getElementById("times_select_form");
+
+    var patient_select_now = document.getElementById("patient_select_form_now");
+    var contact_select_now = document.getElementById("contact_select_form_now");
+
+<!-- First, fetch the whole patients list -->
+    function load_patients() {
+    fetch('/events/patients_list').then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_patients = '';
+           for (let patient of data.patients) {
+                    optionHTML_patients += '<option value="' + patient.id + '">' + patient.f_name + ' ' + patient.l_name + '</option>';
+                }
+           patient_select.innerHTML = optionHTML_patients;
+            load_first_contacts();
+        });
+    });
+}
+
+<!-- Then, get the current selected patient and fetch his contacts -->
+    function load_first_contacts () {
+    var value_2 = patient_select.options[patient_select.selectedIndex].value;
+    fetch('/events/' +  value_2).then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_first_contact = '';
+           for (let contact of data.contacts) {
+                    optionHTML_first_contact += '<option value="' + contact.id + '">' + contact.f_name + ' ' + contact.l_name +  '</option>';
+                }
+           contact_select.innerHTML = optionHTML_first_contact;
+        });
+    });
+}
+
+
+<!-- First, fetch the whole patients list -->
+    function load_patients_now() {
+    fetch('/events/patients_list').then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_patients = '';
+           for (let patient of data.patients) {
+                    optionHTML_patients += '<option value="' + patient.id + '">' + patient.f_name + ' ' + patient.l_name + '</option>';
+                }
+           patient_select_now.innerHTML = optionHTML_patients;
+            load_first_contacts_now();
+        });
+    });
+}
+
+<!-- Then, get the current selected patient and fetch his contacts -->
+    function load_first_contacts_now () {
+    var value_3 = patient_select_now.options[patient_select_now.selectedIndex].value;
+    fetch('/events/' +  value_3).then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_first_contact = '';
+           for (let contact of data.contacts) {
+                    optionHTML_first_contact += '<option value="' + contact.id + '">' + contact.f_name + ' ' + contact.l_name +  '</option>';
+                }
+           contact_select_now.innerHTML = optionHTML_first_contact;
+        });
+    });
+}
+
+
+
+<!-- Later, load the days (show 7 days ahead but can be editable) -->
+    function load_days() {
+    fetch('/events/days_list').then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_days = '';
+           for (let day of data.weekdays) {
+                    optionHTML_days += '<option value="' + day.date + '">' + day.hebrew_day + ' ' + day.date + '</option>';
+                }
+           days_select.innerHTML = optionHTML_days;
+           add_first_events();
+        });
+    });
+}
+
+<!-- After the days list created, get the selected day for the first time and generate free time slots list -->
+
+    function add_first_events () {
+    var day_chosen = days_select.options[days_select.selectedIndex].value;
+    fetch('/events/generate_events_slots/' +  day_chosen).then(function(response) {
+        response.json().then(function(data) {
+           console.table(data);
+           let optionHTML_slots = '';
+           for (let slot of data.slots) {
+                    optionHTML_slots += '<option value="' + slot + '">' + slot + '</option>';
+                }
+           times_select.innerHTML = optionHTML_slots;
+        });
+    });
+}
+
+<!-- Now we have the patients list, the matching contact, 7 days list and free time slots for the chosen day -->
+<!-- We need to make 2 on change functions, when we change a Patient(Generate new contact list) and when we change a Day (Generate new free slot time list according to the day selected)-->
+
+<!-- When patient is changed, fetch the relevant contacts list -->
+
+    patient_select.onchange = function() {
+    load_first_contacts();
+};
+
+
+    patient_select_now.onchange = function() {
+    load_first_contacts_now();
+};
+
+<!-- On Day change, fetch the current available time slots  -->
+
+    days_select.onchange = function() {
+    add_first_events();
+};
+
+
+
+
+</script>
+
+
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery UI -->
+<script src="/static/assets/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/assets/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/assets/js/demo.js"></script>
+<!-- fullCalendar 2.2.5 -->
+<script src="/static/assets/plugins/moment/moment.min.js"></script>
+<script src="/static/assets/plugins/fullcalendar/main.min.js"></script>
+<script src="/static/assets/plugins/fullcalendar-daygrid/main.min.js"></script>
+<script src="/static/assets/plugins/fullcalendar-timegrid/main.min.js"></script>
+<script src="/static/assets/plugins/fullcalendar-interaction/main.min.js"></script>
+<script src="/static/assets/plugins/fullcalendar-bootstrap/main.min.js"></script>
+<!-- Page specific script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function(event){
+  // your code here
+
+    $(function () {
+
+      /* initialize the external events
+      -----------------------------------------------------------------*/
+      function ini_events(ele) {
+        ele.each(function () {
+
+          // create an Event Object (https://fullcalendar.io/docs/event-object)
+          // it doesn't need to have a start or end
+          var eventObject = {
+            title: $.trim($(this).text()) // use the element's text as the event title
+          }
+
+          // store the Event Object in the DOM element so we can get to it later
+          $(this).data('eventObject', eventObject)
+
+          // make the event draggable using jQuery UI
+          $(this).draggable({
+            zIndex        : 1070,
+            revert        : true, // will cause the event to go back to its
+            revertDuration: 0  //  original position after the drag
+          })
+
+        })
+      }
+
+      ini_events($('#external-events div.external-event'))
+
+      /* initialize the calendar
+      -----------------------------------------------------------------*/
+      //Date for the calendar events (dummy data)
+      var date = new Date()
+      var d    = date.getDate(),
+          m    = date.getMonth(),
+          y    = date.getFullYear()
+
+      var Calendar = FullCalendar.Calendar;
+      var Draggable = FullCalendarInteraction.Draggable;
+
+      var containerEl = document.getElementById('external-events');
+      var checkbox = document.getElementById('drop-remove');
+      var calendarEl = document.getElementById('calendar');
+
+      // initialize the external events
+      // -----------------------------------------------------------------
+
+      new Draggable(containerEl, {
+        itemSelector: '.external-event',
+        eventData: function(eventEl) {
+          console.log(eventEl);
+          return {
+            title: eventEl.innerText,
+            backgroundColor: window.getComputedStyle( eventEl ,null).getPropertyValue('background-color'),
+            borderColor: window.getComputedStyle( eventEl ,null).getPropertyValue('background-color'),
+            textColor: window.getComputedStyle( eventEl ,null).getPropertyValue('color'),
+          };
+        }
+      });
+
+      var calendar = new Calendar(calendarEl, {
+        plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
+        header    : {
+          left  : 'prev,next today',
+          center: 'title',
+          right : 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+
+        'themeSystem': 'bootstrap',
+        //Random default events
+        events: [
+            {% for event in gc %}
+                {
+                    id: '{{event.event_id}}',
+                    title: '{{event.summary}}',
+                    start: '{{event.start}}',
+                    end: '{{event.end}}'
+                },
+            {% endfor %}
+        ],
+        editable  : true,
+        droppable : true, // this allows things to be dropped onto the calendar !!!
+        drop      : function(info) {
+          // is the "remove after drop" checkbox checked?
+          if (checkbox.checked) {
+            // if so, remove the element from the "Draggable Events" list
+            info.draggedEl.parentNode.removeChild(info.draggedEl);
+          }
+        },
+         eventClick: function(info) {
+           info.jsEvent.preventDefault(); // don't let the browser navigate
+           var modal = document.getElementById("add_new_contact_modal");
+           console.log("Chosen event ID is:");
+           console.log(info.event.id);
+           var eventID_num = info.event.id;
+
+           $(".modal-body #eventID").val( eventID_num );
+           $(".modal-body #eventStartTime").val( info.event.start );
+           $(".modal-body #eventEndTime").val( info.event.end );
+
+           $("#add_new_contact_modal").modal('show');
+         }
+
+      });
+
+      calendar.render();
+      // $('#calendar').fullCalendar()
+
+      /* ADDING EVENTS */
+      var currColor = '#3c8dbc' //Red by default
+      //Color chooser button
+      $('#color-chooser > li > a').click(function (e) {
+        e.preventDefault()
+        //Save color
+        currColor = $(this).css('color')
+        //Add color effect to button
+        $('#add-new-event').css({
+          'background-color': currColor,
+          'border-color'    : currColor
+        })
+      })
+      $('#add-new-event').click(function (e) {
+        e.preventDefault()
+        //Get value and make sure it is not null
+        var val = $('#new-event').val()
+        if (val.length == 0) {
+          return
+        }
+
+        //Create events
+        var event = $('<div />')
+        event.css({
+          'background-color': currColor,
+          'border-color'    : currColor,
+          'color'           : '#fff'
+        }).addClass('external-event')
+        event.html(val)
+        $('#external-events').prepend(event)
+
+        //Add draggable funtionality
+        ini_events(event)
+
+        //Remove event from text input
+        $('#new-event').val('')
+      })
+    })
+});
+
+</script>
+
+{% endblock javascripts %}

@@ -1,0 +1,131 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Tables {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="min-height-300 bg-primary position-absolute w-100"></div>
+
+  {% include "includes/sidenav-rtl.html" %}
+
+  <main class="main-content position-relative border-radius-lg ">
+
+    {% include "includes/navigation-rtl.html" %}
+
+    <div class="container-fluid py-4">
+
+    <form class="form-group " dir="rtl" method="POST">
+
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header pb-0">
+              <div class="d-flex align-items-left">
+
+                <button type="submit" name="add_patient_form" href="{{ url_for('patients_blueprint.add_patient',form=form) }}" class="btn btn-outline-success">שמירה</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="text-uppercase text-sm">פרטי המטופל</p>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group" >
+
+                    {{ form.f_name.label(class="form-control-label") }}
+                   {{ form.f_name(class="form-control" ) }}
+
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+
+                    {{ form.l_name.label(class="form-control-label") }}
+                   {{ form.l_name(class="form-control" ) }}
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                      {{ form.patient_id.label(class="form-control-label") }}
+                      {{ form.patient_id(class="form-control") }}
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group" >
+
+                    {{ form.bed.label(class="form-control-label") }}
+                   {{ form.bed(class="form-control" ) }}
+
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                      {{ form.department.label(class="form-control-label") }}
+                      {{ form.department(class="form-control" ,value=current_user.id) }}
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                      {{ form.max_calls.label(class="form-control-label") }}
+                      {{ form.max_calls(class="form-control") }}
+                  </div>
+                </div>
+              </div>
+{#              <hr class="horizontal dark">#}
+{#              <p class="text-uppercase text-sm">Contact Information</p>#}
+{#              <div class="row">#}
+{#                <div class="col-md-12">#}
+{#                  <div class="form-group">#}
+{#                    <label for="example-text-input" class="form-control-label">Address</label>#}
+{#                    <input class="form-control" type="text" value="Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09">#}
+{#                  </div>#}
+{#                </div>#}
+{#                <div class="col-md-4">#}
+{#                  <div class="form-group">#}
+{#                    <label for="example-text-input" class="form-control-label">City</label>#}
+{#                    <input class="form-control" type="text" value="New York">#}
+{#                  </div>#}
+{#                </div>#}
+{#                <div class="col-md-4">#}
+{#                  <div class="form-group">#}
+{#                    <label for="example-text-input" class="form-control-label">Country</label>#}
+{#                    <input class="form-control" type="text" value="United States">#}
+{#                  </div>#}
+{#                </div>#}
+{#                <div class="col-md-4">#}
+{#                  <div class="form-group">#}
+{#                    <label for="example-text-input" class="form-control-label">Postal code</label>#}
+{#                    <input class="form-control" type="text" value="437300">#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              <hr class="horizontal dark">#}
+{#              <p class="text-uppercase text-sm">About me</p>#}
+{#              <div class="row">#}
+{#                <div class="col-md-12">#}
+{#                  <div class="form-group">#}
+{#                    <label for="example-text-input" class="form-control-label">About me</label>#}
+{#                    <input class="form-control" type="text" value="A beautiful Dashboard for Bootstrap 5. It is Free and Open Source.">#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </form>
+      {% include "includes/footer.html" %}
+
+    </div>
+
+  </main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

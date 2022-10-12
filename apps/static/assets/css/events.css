@@ -1,0 +1,28 @@
+/*    CSS file generated for holding all the Events themes and special designs.      */
+
+.prettyLabel {
+    display: inline-block;
+    width: 100%;
+    text-align: right;
+}
+
+.eventTimes {
+    text-align: left;
+}
+
+.fc-title {
+    display: inline-block;
+    width: 70%;
+    text-align: right;
+ }
+
+.add-event{
+    display: block;
+    width: 10%;
+    float:right;
+}
+
+.righte{
+    display: block;
+    float:right;
+}
