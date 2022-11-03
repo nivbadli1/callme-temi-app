@@ -2,12 +2,15 @@
 import asyncio
 import datetime
 import logging
+
 # from crontab import CronTab
 from flask import app, jsonify
 from temi import Temi
 from apps.events import temi_robot
 from apps import config
+from apps import db
 import os
+
 # Internal Modules imports:
 from apps.authentication.models import Event, Patient, Contact
 
@@ -20,10 +23,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 #  Global Configuration For Class:
-
-e = 'mysql+pymysql://naya:NayaPass1!@35.226.141.122/temi_v3'
-engine = create_engine(e)
-session = Session(engine)
 DAYS_TO_SHOW_IN_EVENTS = 7
 logger = logging.getLogger(__name__)
 
@@ -112,7 +111,7 @@ def get_available_slots(day):
 # Get a full slots list and remove occupied slots, return a list
 def remove_occupied_slots(slots_list, day):
     # Create a set of the same day events
-    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('\events\credentials.json'))
+    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('/events/credentials.json'))
     today_events_timestamps = []
     for event in gc.get_events(day, day + datetime.timedelta(days=1)):
         today_events_timestamps.append(event.start.strftime("%H:%M"))
@@ -161,7 +160,7 @@ def generate_json():
 
 # Generate new Google Calendar Event (Step 1.1)
 def add_new_google_calendar_event(start_time, patient_name, contact_name, contact_mail):
-    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('\events\credentials.json'))
+    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('/events/credentials.json'))
     event_template = generate_json()
     # Format the Template JSON
     new_start_time = start_time.isoformat() + "+03:00"
@@ -191,8 +190,9 @@ def add_event_to_db(event, patient_id, contact_id, department_id=None):
                      status=0, patient_id=patient_id, contact_id=contact_id)
     if (department_id):
         Event.department_id = department_id
-    session.add(db_event)
-    session.commit()
+
+    db.session.add(db_event)
+    db.session.commit()
     print("Event added to db successfully!")
     return True
 
@@ -211,15 +211,16 @@ def add_event_to_db(event, patient_id, contact_id, department_id=None):
 def create_new_event(start, patient_id, contact_id, send_to_robot=None):
     # Create a Google calendar event
     # should also take the p name and c name to do a beautiful title
-    contact = session.query(Contact).filter_by(contact_id =contact_id).first()
-    patient = session.query(Patient).filter_by(patient_id=patient_id).first()
+    contact = db.session.query(Contact).filter_by(contact_id=contact_id).first()
+    patient = db.session.query(Patient).filter_by(patient_id=patient_id).first()
     department_id = patient.department_id
     patient_name = patient.f_name
     contact_name = contact.f_name
     contact_mail = contact.mail
-    print("Patient: %s" % patient_name + "patient_id: %s " % patient_id + " Contact: %s" % contact_name + " contact_id: %s" % contact_id + " contact mail: %s" % contact_mail)
+    print(
+        "Patient: %s" % patient_name + "patient_id: %s " % patient_id + " Contact: %s" % contact_name + " contact_id: %s" % contact_id + " contact mail: %s" % contact_mail)
     # print("P: {} {}, C: {} {} {}", patient_name, patient_id, contact_name, contact_id)
-    event = add_new_google_calendar_event(start, patient_name, contact_name,contact_mail)
+    event = add_new_google_calendar_event(start, patient_name, contact_name, contact_mail)
 
     # Add new event ID to our database event table
     add_event_to_db(event, patient_id, contact_id)
@@ -267,13 +268,13 @@ def create_new_event(start, patient_id, contact_id, send_to_robot=None):
 # Get Event ID and update record in DB to status 2 (Step 2.2)
 def set_event_as_deleted(event_id):
     stmt = update(Event).where(Event.event_id == event_id).values(status='2')
-    engine.execute(stmt)
+    db.engine.execute(stmt)
     print("Event marked as deleted (status = 2) in Event table")
 
 
 # Get Event ID and delete event from Google Calendar (Step 2.1)
 def delete_calendar_event(event_id):
-    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('\events\credentials.json'))
+    gc = GoogleCalendar(credentials_path=config.Config.basedir + os.path.join('/events/credentials.json'))
     event_to_be_deleted = gc.get_event(event_id)
     gc.delete_event(event_to_be_deleted)
     print("Event deleted from calendar successfully")

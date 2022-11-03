@@ -48,13 +48,13 @@ def login():
 
         # Something (user or pass) is not ok
         return render_template('accounts/login.html',
-                               msg='Wrong user or password',
+                               msg='מספר מחלקה או סיסמא לא נכונים',
                                form=login_form)
 
     if not current_user.is_authenticated:
         return render_template('accounts/login.html',
                                form=login_form)
-    return redirect(url_for('home_blueprint.index'))
+    return redirect(url_for('patients_blueprint.patients_list'))
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])
